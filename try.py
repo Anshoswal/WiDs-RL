@@ -3,6 +3,7 @@ import numpy as np
 from gymnasium.envs.toy_text.frozen_lake import generate_random_map
 import pprint
 
+# Step 1 is to get the MDP
 env = gym.make('FrozenLake-v1', desc=None, map_name="4x4", is_slippery=True)
 env = env.unwrapped
 mdp_transitions = env.P
@@ -19,16 +20,7 @@ pi = {
 
 val = dict()
 for state in mdp_transitions:
-    val[state] = np.random.random()
-
-# Since 5, 7, 11, 12 and 15 are terminal states, we know their values are 0
-
-val[5] = 0
-val[7] = 0
-val[11] = 0
-val[12] = 0
-val[15] = 0
-
+    pi[state] = np.random.choice()
 def get_new_value_fn(val, mdp, pi, gamma = 1.0):
     new_val = dict()
     state_new_val = 0
@@ -44,11 +36,23 @@ def get_new_value_fn(val, mdp, pi, gamma = 1.0):
         new_val[state] = state_new_val  
     return new_val
 
+#Use to above function to get the new value function, also print how many iterations it took to converge
 def policy_evaluation(val, mdp, pi, epsilon=1e-10, gamma=1.0):
     count = 0
-    while count<2:
+    while True:
         old_value = np.array(list(val.values()))
         new_value = np.array(list(get_new_value_fn(val,mdp,pi,gamma).values()))
-        pprint.pprint(old_value)
-        count +=1
-policy_evaluation(val,mdp_transitions,pi,1e-10,1)
+        d1 = np.subtract(new_value, old_value)
+        difference = np.abs(d1)
+        max_element = np.max(difference)
+        print(difference)
+        if max_element < epsilon:
+            val = new_value
+            count +=1
+            break
+        else:
+            old_value = new_value
+            count += 1
+            print(val)
+    return val, count 
+policy_evaluation(val,mdp_transitions,pi,1e-7,1)
